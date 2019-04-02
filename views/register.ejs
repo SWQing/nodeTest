@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title><%= title %></title>
+    <script src="/plugins/jquery-3.3.1.min.js"></script>
+</head>
+<body>
+<p style="text-align: center;">welcome to register</p>
+<form style="box-shadow: 0 0 5px #ccc;line-height: 50px;text-align: center;margin: 0 auto;">
+    <input id="username" type="text" placeholder="请输入用户名"><br>
+    <input id="password" type="password" placeholder="请输入密码"><br>
+    <button>注册</button>
+</form>
+</body>
+<script>
+    $(function () {
+        $('button').click(function (event) {
+            event.preventDefault();
+            console.log(1);
+            let data = {
+                name: $('#username').val(),
+                password: $('#password').val()
+            }
+            $.ajax({
+                url: '/reg',
+                type: 'POST',
+                data: data,
+                success: (res) => {
+                    console.log(res);
+                }
+            })
+        })
+    })
+</script>
+</html>
