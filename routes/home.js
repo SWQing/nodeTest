@@ -7,9 +7,10 @@ var cheerio = require('cheerio');
 home.index = (req, res, next) => {
     // console.log(1)
     var html = null;
-    var url = 'http://www.lzs100.cc/dongwu/';
+    var url = 'http://heibaimanhua.com/page/';
     var isLoding = 1;
     let requestFun = (page, callback) => {
+        console.log(url + page)
         http.get(url + page, function (res) {
             var chunks = [];
             var size = 0;
@@ -25,12 +26,14 @@ home.index = (req, res, next) => {
                 $ = cheerio.load(html); //cheerio模块开始处理 DOM处理
                 // console.log(($.html()))
                 var arrs = [];
-                $("#left .post").each(function(item) {
+                $(".article .content").each(function(item) {
                     // console.log($(this))
                     // arrs.img$('.content .posts-gallery-img').find('a').attr('href')
-                    var job = {};
-                    job.img = $(this).find('.tu img').attr('src')
-                    job.title = $(this).find('.tu img').attr('alt')
+                    var arr = {};
+                    arr.img = $(this).find('.post-images-item ul li:first-of-type img').attr('src')
+                    arr.title = $(this).find('.posts-default-title h2 a').attr('title')
+                    arr.describe = $(this).find('.posts-default-content .posts-text').html()
+                    arr.date = $(this).find('.posts-default-info .ico-time').text()
                     // job.id = $(this).find('.posts-gallery-img a').attr('href')
                     // job.time = JSON.stringify($(this).find('.content-box .posts-gallery-content .posts-gallery-info .ico-time').html())
                     // job.time = job.time.slice(job.time.length - 11, job.time.length - 1)
@@ -54,8 +57,9 @@ home.index = (req, res, next) => {
                     //         console.log($2.html())
                     //     })
                     // })
-                    if(job.title) {
-                        arrs.push(job)
+                    if(arr.title) {
+                        arr.describe = JSON.stringify(arr.describe)
+                        arrs.push(arr)
                     }
                     // http.get()
                 })
