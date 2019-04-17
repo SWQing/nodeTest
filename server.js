@@ -10,7 +10,7 @@ const fs = require('fs');
 var ep = new eventproxy(),
     urlsArray = [], //存放爬取网址
     pageUrls = [],  //存放收集文章页面网站
-    pageNum = 2,  //要爬取文章的页数
+    pageNum = 10,  //要爬取文章的页数
     articleInfo = [],
     detailArr = [],
     articleNum = 0
@@ -27,14 +27,16 @@ function getDetail(url) {
             console.log(err)
             return;
         }
-        console.log(url)
+        // console.log(url)
         var $ = cheerio.load(html.text)
         let imgArr = []
         $('.post-content .post-images-item img').each(function (index) {
-            if(index == 0) {
+            if(index == 0 ) {
                 imgArr.push($(this).attr('src'))
-            } else if(index < $('.post-content .post-images-item img').length - 1) {
+            } else if(index < $('.post-content .post-images-item img').length - 1 && $(this).attr('data-original')) {
                 imgArr.push($(this).attr('data-original'))
+            } else if(index < $('.post-content .post-images-item img').length - 1 && !$(this).attr('data-original')) {
+                imgArr.push($(this).attr('src'))
             }
 
         })
@@ -45,7 +47,8 @@ function getDetail(url) {
         let content = {
             title: $('.post-title .title').text(),
             date: $('.post-title .postclock').text(),
-            imgArr: imgArr
+            imgArr: imgArr,
+            content: $('.post-content').toString()
         }
         detailArr.push(content)
     })
@@ -61,6 +64,7 @@ function start(){
                     // pres.text 里面存储着请求返回的 html 内容，将它传给 cheerio.load 之后
                     // 就可以得到一个实现了 jquery 接口的变量，我们习惯性地将它命名为 `$`
                     // 剩下就都是利用$ 使用 jquery 的语法了
+                    console.log(pres.text)
                     var $ = cheerio.load(pres.text);
                     var curPageUrls = $('.posts-default-title a');
                     var curImgArr = $('.thumbnail')
@@ -92,8 +96,8 @@ function start(){
             // 控制并发数
             var curCount = 0;
             var reptileMove = function(url,callback){
-                myCount++
-                console.log(myCount)
+                // myCount++
+                // console.log(myCount)
                 //延迟毫秒数
                 var delay = parseInt((Math.random() * 30000000) % 1000, 10);
                 curCount++;
@@ -112,12 +116,16 @@ function start(){
             // mapLimit(arr, limit, iterator, [callback])
             // 异步回调
             async.mapLimit(articleUrls, 10 ,function (url, callback) {
-                console.log(articleUrls)
-                console.log(articleUrls.length)
                 reptileMove(url, callback);
             }, function (err,result) {
                 // 4000 个 URL 访问完成的回调函数
                 // ...
+                var array = [{id:1},{id:3},{id:3},{id:5},{id:5},{id:7},{id:9}];
+                var hash = {};
+                articleInfo = articleInfo.reduce(function (item, next) {
+                    hash[next.title] ? '' : hash[next.title] = true && item.push(next);
+                    return item;
+                }, []);
                 fs.writeFile("list.js",JSON.stringify(articleInfo,null,"\t"), err => {
                     if(!err) console.log("success~");
                 });
